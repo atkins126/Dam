@@ -17,6 +17,7 @@ object FrmDamList: TFrmDamList
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object L: TListBox
@@ -888,24 +889,26 @@ object FrmDamList: TFrmDamList
       ''
       'uses DamUnit;'
       ''
+      'type EDam = DamUnit.EDam;'
+      ''
       'function DamParams(const Params: array of Variant): TDamParams;'
       ''
       
-        'procedure MsgInfo(const Msg: String; const Params: TDamParams = ' +
+        'procedure MsgInfo(const Msg: string; const Params: TDamParams = ' +
         'nil);'
       
-        'procedure MsgWarn(const Msg: String; const Params: TDamParams = ' +
+        'procedure MsgWarn(const Msg: string; const Params: TDamParams = ' +
         'nil);'
       
-        'procedure MsgError(const Msg: String; const Params: TDamParams =' +
+        'procedure MsgError(const Msg: string; const Params: TDamParams =' +
         ' nil);'
       
-        'function MsgQuest(const Msg: String; const Params: TDamParams = ' +
+        'function MsgQuest(const Msg: string; const Params: TDamParams = ' +
         'nil): Boolean;'
       
-        'procedure MsgRaise(const Msg: String; const Params: TDamParams =' +
+        'procedure MsgRaise(const Msg: string; const Params: TDamParams =' +
         ' nil);'
-      'function CaptureErrorMsg: String;'
+      'function CaptureErrorMsg: string;'
       'procedure ShowErrorMsg;'
       ''
       '<DECLARATIONS>'
@@ -918,34 +921,34 @@ object FrmDamList: TFrmDamList
       '  Result := DamUnit.DamParams(Params);'
       'end;'
       ''
-      'procedure MsgInfo(const Msg: String; const Params: TDamParams);'
+      'procedure MsgInfo(const Msg: string; const Params: TDamParams);'
       'begin'
       '  DamUnit.MsgInfo(Msg, Params);'
       'end;'
       ''
-      'procedure MsgWarn(const Msg: String; const Params: TDamParams);'
+      'procedure MsgWarn(const Msg: string; const Params: TDamParams);'
       'begin'
       '  DamUnit.MsgWarn(Msg, Params);'
       'end;'
       ''
-      'procedure MsgError(const Msg: String; const Params: TDamParams);'
+      'procedure MsgError(const Msg: string; const Params: TDamParams);'
       'begin'
       '  DamUnit.MsgError(Msg, Params);'
       'end;'
       ''
       
-        'function MsgQuest(const Msg: String; const Params: TDamParams): ' +
+        'function MsgQuest(const Msg: string; const Params: TDamParams): ' +
         'Boolean;'
       'begin'
       '  Result := DamUnit.MsgQuest(Msg, Params);'
       'end;'
       ''
-      'procedure MsgRaise(const Msg: String; const Params: TDamParams);'
+      'procedure MsgRaise(const Msg: string; const Params: TDamParams);'
       'begin'
       '  DamUnit.MsgRaise(Msg, Params);'
       'end;'
       ''
-      'function CaptureErrorMsg: String;'
+      'function CaptureErrorMsg: string;'
       'begin'
       '  Result := DamUnit.CaptureErrorMsg;'
       'end;'

@@ -1,9 +1,16 @@
 unit DamDialog;
 
+{$IFDEF FPC}{$mode delphi}{$ENDIF}
+
 interface
 
-uses Vcl.Forms, System.Classes, System.Actions, Vcl.ActnList, Vcl.StdCtrls,
+uses
+{$IFDEF FPC}
+  Forms, Classes, ActnList, Buttons, Controls, ExtCtrls,
+{$ELSE}
+  Vcl.Forms, System.Classes, System.Actions, Vcl.ActnList, Vcl.StdCtrls,
   Vcl.Buttons, Vcl.Controls, Vcl.ExtCtrls,
+{$ENDIF}
   //
   DamUnit, DzHTMLText;
 
@@ -34,32 +41,57 @@ type
     NumButtons: Byte;
 
     LangStrs: record
-      OK, Yes, No, Info, Quest, Warn, Error, Msg: String;
+      OK, Yes, No, Info, Quest, Warn, Error, Msg: string;
     end;
 
-    procedure LoadText(const aText: String);
-    procedure CalcWidth(const aText: String);
+    procedure LoadText(const aText: string);
+    procedure CalcWidth(const aText: string);
     procedure CalcHeight;
     procedure RealignButtons;
     procedure LoadLanguage;
 
-    function GetIconTitle(I: TDamMsgIcon): String;
+    function GetIconTitle(I: TDamMsgIcon): string;
     procedure DoSound;
 
     procedure SetFormCustomization;
     procedure LoadHelp;
   end;
 
-function RunDamDialog(aDamMsg: TDamMsg; const aText: String): TDamMsgRes;
+function RunDamDialog(aDamMsg: TDamMsg; const aText: string): TDamMsgRes;
 
 implementation
 
 {$R *.dfm}
 
-uses Winapi.Windows, System.SysUtils, Vcl.Clipbrd, System.IniFiles,
+uses
+{$IFDEF FPC}
+  Windows, SysUtils, Clipbrd, IniFiles, MMSystem;
+{$ELSE}
+  Winapi.Windows, System.SysUtils, Vcl.Clipbrd, System.IniFiles,
   Winapi.MMSystem, System.Math, Vcl.Themes;
+{$ENDIF}
 
-function RunDamDialog(aDamMsg: TDamMsg; const aText: String): TDamMsgRes;
+{$IFDEF FPC}
+const
+  {$EXTERNALSYM IDI_HAND}
+  IDI_HAND = MakeIntResource(32513);
+  {$EXTERNALSYM IDI_QUESTION}
+  IDI_QUESTION = MakeIntResource(32514);
+  {$EXTERNALSYM IDI_EXCLAMATION}
+  IDI_EXCLAMATION = MakeIntResource(32515);
+  {$EXTERNALSYM IDI_ASTERISK}
+  IDI_ASTERISK = MakeIntResource(32516);
+  {$EXTERNALSYM IDI_WINLOGO}
+  IDI_WINLOGO = MakeIntResource(32517);
+  {$EXTERNALSYM IDI_WARNING}
+  IDI_WARNING = IDI_EXCLAMATION;
+  {$EXTERNALSYM IDI_ERROR}
+  IDI_ERROR = IDI_HAND;
+  {$EXTERNALSYM IDI_INFORMATION}
+  IDI_INFORMATION = IDI_ASTERISK;
+{$ENDIF}
+
+function RunDamDialog(aDamMsg: TDamMsg; const aText: string): TDamMsgRes;
 var F: TFrmDamDialog;
 begin
   F := TFrmDamDialog.Create(Application);
@@ -84,12 +116,14 @@ begin
   Btn2.ModalResult := 102;
   Btn3.ModalResult := 103;
 
+  {$IFNDEF FPC}
   //when using app custom style theme, the DzHTMLText doesn't get theme backgound color
   if TStyleManager.IsCustomStyleActive then
     LbMsg.Color := TStyleManager.ActiveStyle.GetStyleColor(TStyleColor.scWindow);
+  {$ENDIF}
 end;
 
-procedure TFrmDamDialog.LoadText(const aText: String);
+procedure TFrmDamDialog.LoadText(const aText: string);
 begin
   LbMsg.Images := DamMsg.Dam.Images;
   LbMsg.Font.Assign(DamMsg.Dam.MessageFont);
@@ -97,7 +131,7 @@ begin
   CalcHeight;
 end;
 
-procedure TFrmDamDialog.CalcWidth(const aText: String);
+procedure TFrmDamDialog.CalcWidth(const aText: string);
 const MinSize=300;
 begin
   if DamMsg.FixedWidth=0 then
@@ -155,7 +189,7 @@ end;
 
 //
 
-function TFrmDamDialog.GetIconTitle(I: TDamMsgIcon): String;
+function TFrmDamDialog.GetIconTitle(I: TDamMsgIcon): string;
 begin
   case I of
     diApp   : Result := Application.Title;
@@ -274,7 +308,7 @@ begin
 end;
 
 procedure TFrmDamDialog.LoadLanguage;
-var aLang: String;
+var aLang: string;
     R: TResourceStream;
     S: TStringList;
     Ini: TMemIniFile;
@@ -297,7 +331,7 @@ begin
 
   S := TStringList.Create;
   try
-    R := TResourceStream.Create(FindClassHInstance(TDam), 'DAM_LANG', RT_RCDATA);
+    R := TResourceStream.Create({$IFDEF FPC}HInstance{$ELSE}FindClassHInstance(TDam){$ENDIF}, 'DAM_LANG', RT_RCDATA);
     try
       S.LoadFromStream(R, TEncoding.UTF8);
     finally

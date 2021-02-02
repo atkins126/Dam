@@ -1,12 +1,14 @@
+![Preview](images/dam_preview.gif)
 
 # Dam
 
-## Delphi Message Dialogs with Formatted Text
+## Delphi and Lazarus Message Dialogs with Formatted Text
 
-![Delphi Supported Versions](https://img.shields.io/badge/Delphi%20Supported%20Versions-XE2..10.3%20Rio-blue.svg)
+![Delphi Supported Versions](https://img.shields.io/badge/Delphi%20Supported%20Versions-XE2..10.4-blue.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-Win32%20and%20Win64-red.svg)
 ![Auto Install](https://img.shields.io/badge/-Auto%20Install%20App-orange.svg)
-![Dam Version](https://img.shields.io/badge/Dam%20Version-3.0-green.svg)
+![VCL](https://img.shields.io/badge/-VCL-lightgrey.svg)
+![Lazarus support](https://img.shields.io/badge/-Lazarus%20support-green.svg)
 ![Languages](https://img.shields.io/badge/Languages-12-brightgreen.svg)
 
 ![Dam Super Print](images/dam_super_print.png)
@@ -18,15 +20,62 @@
 - [How to install](#how-to-install)
 - [Supported Languages](#supported-languages)
 - [How to use](#how-to-use)
+- [Message parameters](#message-parameters)
 - [TDam properties](#tdam-properties)
 - [TDam events](#tdam-events)
 - [TDamMsg properties](#tdammsg-properties)
+- [Escaping HTML tags and parameters](#escaping-html-tags-and-parameters)
 - [Quick Messages](#quick-messages)
+- [Raising exceptions](#raising-exceptions)
 - [How to change Language file](#how-to-change-language-file)
 - [Delphi versions below XE8 remark](#delphi-versions-below-xe8-remark)
 - [History](#history)
 
 ## What's New
+
+- 12/18/2020 (Version 4.8)
+
+   - Updated Component Installer app (Fixed call to rsvars.bat when Delphi is installed in a path containing spaces characters).
+
+- 11/27/2020 (Version 4.7)
+
+   - Included EDam exception shortcut in Dam file generated unit (When using Build button in Dam Messages Manager form).
+
+- 11/11/2020 (Version 4.6)
+
+   - New EDam exception class (read [Raising exceptions](#raising-exceptions)).
+   - Implemented HTML tags escape and parameter/exception constant bypass (read [Escaping HTML tags and parameters](#escaping-html-tags-and-parameters)).
+
+- 10/31/2020 (Version 4.5)
+
+   - Included Delphi 10.4 auto-install support.
+
+- 10/27/2020 (Version 4.4)
+
+   - Fixed previous Delphi versions (at least on XE2, XE3, XE4 and XE5) package tag. It was causing package compilation error.
+   - Fixed the use of System.ImageList unit because it's only available from XE8.
+   - Fixed .ToString conversion because is not available in some Delphi versions.
+
+- 10/26/2020 (Version 4.3) (*Minimum DzHTMLText version: 2.6*)
+
+   - Changed TDzHTMLText version dependency check to use new internal version control.
+
+- 10/26/2020 (Version 4.2)
+
+   - Updated CompInstall to version 2.0 (now supports GitHub auto-update)
+
+- 10/18/2020 (Version 4.1) (*Minimum DzHTMLText version: 2.04*)
+
+   - Implemented DzHTMLText version internal check.
+
+- 10/14/2020 (Version 4.0)
+
+   - **Lazarus support**. :smile:
+   
+   *Remarks:*
+   
+   - The TRichEdit control in Message Editor Dialog was replaced by a TMemo, because in non Windows systems this control doesn't exist. So the syntax highlight under HTML tags are also no longer displayed in the editor.
+   - At this time, the Cut, Copy and Paste commands for messages in the Lazarus IDE environment are not yet available.
 
 - 09/24/2020
 
@@ -143,7 +192,7 @@ end;
 
 So, I think this is really ugly, don't you think? :persevere:
 
-**And if I tell you this can be written much more beautiful:** :smile:
+**With Dam you can write this same message like this:** :smile:
 
 ```delphi
 begin
@@ -183,11 +232,13 @@ The Message Dialog: :stuck_out_tongue:
 
    *This is a label with HTML formatting component. The messages uses this component to display formatted text.*
 
-### Auto install
+### Delphi auto installation
 
 Close Delphi IDE and run **CompInstall.exe** app to auto install component into Delphi.
 
-### Manual install
+> If you are installing DzHTMLText and Dam at once, using Component Installer utility, after installing DzHTMLText you gonna need to open and close Delphi before installing Dam (this is needed just to update Library Path file used by MSBUILD).
+
+### Delphi manual installation
 
 1. Open **Dam.groupproj** in the Delphi.
 
@@ -203,7 +254,13 @@ Close Delphi IDE and run **CompInstall.exe** app to auto install component into 
 
 7. Run **AfterBuild.bat** to publish DFM and RES to Release folders.
 
-> Supports Delphi XE2..Delphi 10.3 Rio
+> Supports Delphi XE2..Delphi 10.4
+
+### Lazarus installation
+
+1. Go to menu Package > Open Package File (.lpk) and load **LazDamPackage.lpk**, and click into **Compile**.
+
+2. Go to menu Package > Open Package File (.lpk) and load **LazDamDesignPackage.lpk**, and click into **Use > Install**.
 
 # Supported Languages
 
@@ -238,7 +295,7 @@ The TDam has a property called `DamUnitName`. Here you define a unit name to con
 
 So, at any unit, you just add a uses to this unit, and call the message you want by message name. If the message has parameters, the method will be declared automatically asking for parameters in an array.
 
-**Yeah, but if I am at the same unit that is the TDam and TDamMsg messages, if I call method by message name, the Delphi think I'm referring the object of message!**
+**Yeah, but if I am at the same class (TForm/TDataModule) that is the TDam and TDamMsg messages, if I call method by message name, the Delphi think I'm referring the object of message!**
 
 This is true, and because of that, the component has a object hidden function. You only need to name the message starting with `_`. So the unit builder will remove this character to name the method and the Delphi will not confuse the two things.
 
@@ -266,7 +323,7 @@ If you are using more than one TDam, I recommend you to set the same `DamUnitNam
 
 If you call message by method of message name, the method will be a procedure if message has only one button.
 
-If message has two or three buttons, the method will be a function. When it has two buttons, the function will always return boolean value, retuning true if first button on the left was clicked, or returning false if second button (last button on the right) was clicked.
+If message has two or three buttons, the method will be a function. When it has two buttons, the function will always return boolean value, returning true if first button on the left was clicked, or returning false if second button (last button on the right) was clicked.
 
 When message has three button, the function returns integer value 1, 2 or 3, depending on which button was pressed in the message dialog. The first button is the left one; the second is the middle button; the third button is the right button.
 
@@ -278,6 +335,20 @@ case QuestionSaveFile([aFileName]) of
   2: {continue}; //No button
   3: Abort; //Cancel button
 end;
+```
+
+## Message parameters
+
+If you want to use replaceable parameters in the message, just type `%p`. You can specify multiple parameters in the same message. When you are calling message, the parameters array are sequentially in the same order they are typed in the message.
+
+The parameters array are variant type, so they don't need conversions.
+
+Example:
+```delphi
+//TDamMsg Message property = 'This is a %p message number %p at time %p'
+MyCustomMessage(['test', 123, Now]);
+//or
+MsgInfo('This is a %p message number %p at time %p', ['test', 123, Now]);
 ```
 
 ## TDam properties
@@ -364,6 +435,29 @@ Fires before a Dam Message is displayed, allowing you to intercept messages and 
 - dtByIcon: The title is defined by Icon property (this uses language resource)
 - dtCustom: The title is defined by CustomTitle property
 
+## Escaping HTML tags and parameters
+
+All message parameters are automatically "escaped" by component.
+
+Examples:
+
+```delphi
+procedure Test1;
+begin
+  MyCustomMessage(['This will display <b> literal string', 'This will display "%p" literal string']);
+end;
+
+procedure Test2;
+begin
+  MsgInfo('<b>First message parameter</b>: %p', ['Here I want to display literal <> characters']);
+end;
+```
+
+- The message fixed part is **always HTML notation** with parameter and exception identifiers support (`%p` and `{except}`).
+- The parameters array is **always auto-escaped** allowing any string literal character (**HTML notation are NOT allowed in parameters array**).
+
+If you want to display HTML literal characters in fixed message part, please check escape constants at [DzHTMLText documentation](https://github.com/digao-dalpiaz/DzHTMLText#literal-tag-character).
+
 ## Quick Messages
 
 ```delphi
@@ -423,7 +517,49 @@ You can also re-raise an exception:
 try
   DoSaveFile;
 except
-  MsgRaise('Fatal error saving file: {except}'); //re-raise a new exception with better text message
+  raise EDam.Create('Fatal error saving file: {except}'); //re-raise a new exception with better text message
+end;
+```
+
+## Raising exceptions
+
+You can set `RaiseExcept` parameter on a Dam Message object, so when the message is called, an exception will be raised.
+
+**Remember:** to take advantage of Dam resources, you need to set `HandleExceptions` on Dam container object. When an exception is raised, Dam will intercept this exception and display custom dialog.
+
+Examples:
+
+```delphi
+procedure TestException_Generic;
+begin
+  raise Exception.Create('This is my generic exception');     
+  //HTML tags are NOT allowed when using generic exception
+end;
+
+procedure TestException_DamRunTimeCreation;
+begin
+  raise EDam.Create('This is my <b>exception</b> with parameter %p', ['First parameter']);
+end;
+
+procedure TestException_DamDesignTimeCreation;
+begin
+  raise EDam.Create(MyCustomMessage, ['First parameter']);
+  //MyCustomMessage represents a TDamMsg object created at design-time
+end;
+
+procedure TestException_DamDesignTimeCreation_ByProperty;
+begin
+  _MyCustomMessage.Run(['First parameter']);
+  //or
+  MyCustomMessage(['First parameter']);
+  
+  //MyCustomMessage represents a TDamMsg object created at design-time with property RaiseExcept=True
+end;
+
+procedure TestException_Quick;
+begin
+  MsgRaise('This is my <b>exception</b> with parameter %p', ['First parameter']);
+  //This method is for compatibility, but I recommend you to use "raise EDam.Create" instead.
 end;
 ```
 

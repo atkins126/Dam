@@ -2,8 +2,13 @@ unit DamMsgEdit;
 
 interface
 
-uses Vcl.Forms, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Controls,
+uses
+{$IFDEF FPC}
+  Forms, Buttons, StdCtrls, ExtCtrls, ColorBox, Controls,
+{$ELSE}
+  Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Controls,
   Vcl.Buttons, System.Classes,
+{$ENDIF}
   //
   DamUnit, DzHTMLText;
 
@@ -47,11 +52,11 @@ type
     EdFontColor: TColorBox;
     EdBgColor: TColorBox;
     EdAnyColor: TColorBox;
-    M: TRichEdit;
     Label1: TLabel;
     BtnHelp: TBitBtn;
     BtnParameter: TSpeedButton;
     BtnExceptPar: TSpeedButton;
+    M: TMemo;
     procedure MChange(Sender: TObject);
     procedure BtnBoldClick(Sender: TObject);
     procedure BtnItalicClick(Sender: TObject);
@@ -79,7 +84,7 @@ type
     DamMsg: TDamMsg;
     procedure StoreComp(Target: TDamMsg);
   private
-    procedure PutSelText(TagOpen: String; TagClose: String='');
+    procedure PutSelText(TagOpen: string; TagClose: string='');
     procedure SetBtn(C: TDamMsg);
   end;
 
@@ -90,8 +95,13 @@ implementation
 
 {$R *.dfm}
 
-uses Vcl.Graphics, System.SysUtils,
+uses
+{$IFDEF FPC}
+  Graphics, SysUtils, LCLIntf;
+{$ELSE}
+  Vcl.Graphics, System.SysUtils,
   Winapi.Windows, Winapi.Messages, Winapi.ShellAPI;
+{$ENDIF}
 
 procedure TFrmDamMsgEdit.FormCreate(Sender: TObject);
 begin
@@ -99,11 +109,11 @@ begin
 end;
 
 procedure TFrmDamMsgEdit.FormShow(Sender: TObject);
-var A: String;
+var A: string;
     V: Boolean;
 begin
   EdFont.Text := Dam.MessageFont.Name;
-  EdSize.Text := Dam.MessageFont.Size.ToString;
+  EdSize.Text := IntToStr(Dam.MessageFont.Size);
 
   Box.Color := Dam.MessageColor;
   LbMsg.Font.Assign(Dam.MessageFont);
@@ -159,56 +169,17 @@ begin
 end;
 
 procedure TFrmDamMsgEdit.MChange(Sender: TObject);
-var X, Len: Integer;
-    tgX: Integer;
-    I: Integer;
-    A: String;
 begin
   LbMsg.Text := M.Text;
-
-  X := M.SelStart;
-  Len := M.SelLength;
-
-  M.Perform(WM_SETREDRAW, 0, 0);
-  try
-    M.SelectAll;
-    M.SelAttributes.Color := clBlack;
-
-    tgX := 0;
-    A := M.Text;
-    A := StringReplace(A, #10, '', [rfReplaceAll]);
-    for I := 1 to Length(A) do
-    begin
-      case A[I] of
-        '<': tgX := I;
-        '>':
-        if tgX>0 then
-        begin
-
-          M.SelStart := tgX-1;
-          M.SelLength := I-tgX+1;
-
-          M.SelAttributes.Color := clRed;
-          tgX := 0;
-        end;
-      end;
-    end;
-
-    M.SelStart := X;
-    M.SelLength := Len;
-  finally
-    M.Perform(WM_SETREDRAW, 1, 0);
-    M.Refresh;
-  end;
 end;
 
-function CorToStr(C: TColor): String;
+function CorToStr(C: TColor): string;
 begin
   Result := ColorToString(C);
   if Result.StartsWith('$00') then Delete(Result, 2, 2);
 end;
 
-procedure TFrmDamMsgEdit.PutSelText(TagOpen: String; TagClose: String='');
+procedure TFrmDamMsgEdit.PutSelText(TagOpen: string; TagClose: string='');
 begin
   if TagClose='' then TagClose := TagOpen;
 
@@ -277,18 +248,18 @@ end;
 
 procedure TFrmDamMsgEdit.BtnParameterClick(Sender: TObject);
 begin
-  M.SelText := '%p';
+  M.SelText := DAM_PARAM_IDENT;
 end;
 
 procedure TFrmDamMsgEdit.BtnExceptParClick(Sender: TObject);
 begin
-  M.SelText := '{except}';
+  M.SelText := DAM_PARAM_EXCEPTION;
 end;
 
 procedure ClearMsg(Msg: TDamMsg);
 var Def: TDamMsg;
     FocoInvertido: Boolean;
-    AMsg: String;
+    AMsg: string;
 begin
   Def := TDamMsg.Create(nil);
   try
@@ -305,11 +276,11 @@ begin
 end;
 
 procedure TFrmDamMsgEdit.tInfoClick(Sender: TObject);
-var aTipo: String;
-    aNome: String;
+var aTipo: string;
+    aNome: string;
 
   function CheckStartWith(Btn: TSpeedButton): Boolean;
-  var Prefix: String;
+  var Prefix: string;
   begin
     Result := False;
 
@@ -388,7 +359,7 @@ begin
 end;
 
 procedure TFrmDamMsgEdit.BtnOKClick(Sender: TObject);
-var A: String;
+var A: string;
 begin
   EdNome.Text := Trim(EdNome.Text);
 
@@ -413,8 +384,13 @@ begin
 end;
 
 procedure TFrmDamMsgEdit.BtnHelpClick(Sender: TObject);
+const URL = 'https://github.com/digao-dalpiaz/Dam';
 begin
-  ShellExecute(0, '', 'https://github.com/digao-dalpiaz/Dam', '', '', SW_SHOWNORMAL);
+{$IFDEF FPC}
+  OpenURL(URL);
+{$ELSE}
+  ShellExecute(0, '', URL, '', '', SW_SHOWNORMAL);
+{$ENDIF}
 end;
 
 end.
