@@ -4,12 +4,14 @@
 
 ## Delphi and Lazarus Message Dialogs with Formatted Text
 
-![Delphi Supported Versions](https://img.shields.io/badge/Delphi%20Supported%20Versions-XE2..10.4-blue.svg)
+![Delphi Supported Versions](https://img.shields.io/badge/Delphi%20Supported%20Versions-XE3..10.4-blue.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-Win32%20and%20Win64-red.svg)
 ![Auto Install](https://img.shields.io/badge/-Auto%20Install%20App-orange.svg)
 ![VCL](https://img.shields.io/badge/-VCL-lightgrey.svg)
 ![Lazarus support](https://img.shields.io/badge/-Lazarus%20support-green.svg)
-![Languages](https://img.shields.io/badge/Languages-12-brightgreen.svg)
+![Languages](https://img.shields.io/badge/Languages-13-brightgreen.svg)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/C0C53LVFN)
 
 ![Dam Super Print](images/dam_super_print.png)
 ![Dam Super Print 2](images/dam_super_print2.png)
@@ -32,6 +34,25 @@
 - [History](#history)
 
 ## What's New
+
+- 03/14/2021 (Version 4.12)
+
+   - Included Turkish language support.
+
+- 03/13/2021 (Version 4.11)
+
+   - Supporting message buttons caption with any length, automatically increasing button width.
+   - Removed CompInstall.exe from component sources due to AV false positive warning (now you can get it directly from CompInstall repository).
+
+- 03/05/2021 (Version 4.10)
+
+   - New OnLinkClick event.
+
+- 02/10/2021 (Version 4.9)
+
+   - Compatibility with new DzHTMLText component version (now DzHTMLText supports FMX).
+   - Removed Delphi XE2 from the list of environments as it was never possible to compile in this version.
+   - Fixed Delphi XE3 compatibility.
 
 - 12/18/2020 (Version 4.8)
 
@@ -234,7 +255,9 @@ The Message Dialog: :stuck_out_tongue:
 
 ### Delphi auto installation
 
-Close Delphi IDE and run **CompInstall.exe** app to auto install component into Delphi.
+1. Download Component Installer from: https://github.com/digao-dalpiaz/CompInstall/releases/latest
+2. Put **CompInstall.exe** into the component repository sources folder.
+3. Close Delphi IDE and run **CompInstall.exe** app.
 
 > If you are installing DzHTMLText and Dam at once, using Component Installer utility, after installing DzHTMLText you gonna need to open and close Delphi before installing Dam (this is needed just to update Library Path file used by MSBUILD).
 
@@ -254,7 +277,7 @@ Close Delphi IDE and run **CompInstall.exe** app to auto install component into 
 
 7. Run **AfterBuild.bat** to publish DFM and RES to Release folders.
 
-> Supports Delphi XE2..Delphi 10.4
+> Supports Delphi XE3..Delphi 10.4
 
 ### Lazarus installation
 
@@ -278,6 +301,7 @@ At this time, the following languages are available for messages:
 - French
 - Polish
 - Dutch
+- Turkish
 
 The language set the caption of buttons in the message dialogs, like OK, Cancel, Yes, No, and the title of the form, when Information, Question, Warning, Error and Message (custom). The form title can be changed in the message properties and can be automatically set by other objects, like parent form title, main form title and application title.
 
@@ -381,6 +405,13 @@ MsgInfo('This is a %p message number %p at time %p', ['test', 123, Now]);
 `ButtonsColor: TColor` = Define background color of buttons area on message dialog.
 
 ## TDam events
+
+`OnLinkClick(Sender: TObject; Msg: TDamMsg; const Target: string; var Handled: Boolean; var CloseMsg: Boolean; var MsgResult: TDamMsgRes)`
+This event will be triggered when clicked on a link contained in the message.
+
+By default the link target will be automatically opened using ShellExecute from Windows API, so if the target is a web link, the default browser will open the link, or if the target is a system file, the path will be executed/opened by Windows.
+
+If you want to bypass this behavior, use this event and set `Handled` to True. You can also set `CloseMsg` to True and `MsgResult` flag when you want to close the message window.
 
 `OnShowMessage(Sender: TObject; Msg: TDamMsg; var MsgText: String; var Handled: Boolean; var MsgResult: TDamMsgRes)`
 Fires before a Dam Message is displayed, allowing you to intercept messages and even bypass message display, by using Handled parameter.

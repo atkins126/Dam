@@ -27,7 +27,8 @@ const
 
 type
   TDamLanguage = (dgEnglish, dgPortuguese, dgSpanish, dgGerman, dgItalian,
-    dgChinese, dgJapanese, dgGreek, dgRussian, dgFrench, dgPolish, dgDutch);
+    dgChinese, dgJapanese, dgGreek, dgRussian, dgFrench, dgPolish, dgDutch,
+    dgTurkish);
 
   TDamDlgPosition = (dpScreenCenter, dpActiveFormCenter, dpMainFormCenter);
 
@@ -38,8 +39,11 @@ type
   TDamParams = TArray<Variant>;
 
   TDamMsg = class;
-  TDamMsgShowEvent = procedure(Sender: TObject; Msg: TDamMsg; var MsgText: string;
+  TDamShowEvent = procedure(Sender: TObject; Msg: TDamMsg; var MsgText: string;
     var Handled: Boolean; var MsgResult: TDamMsgRes) of object;
+  TDamLinkClickEvent = procedure(Sender: TObject; Msg: TDamMsg;
+    const Target: string; var Handled: Boolean;
+    var CloseMsg: Boolean; var MsgResult: TDamMsgRes) of object;
 
   TDam = class(TComponent)
   private
@@ -55,7 +59,8 @@ type
     FCenterButtons: Boolean;
     FDialogPosition: TDamDlgPosition;
     FDialogBorder: Boolean;
-    FShowEvent: TDamMsgShowEvent;
+    FShowEvent: TDamShowEvent;
+    FLinkClick: TDamLinkClickEvent;
     procedure SetImages(const Value: TCustomImageList);
     procedure SetFont(const Value: TFont);
     function GetFontStored: Boolean;
@@ -83,7 +88,8 @@ type
     property CenterButtons: Boolean read FCenterButtons write FCenterButtons default False;
     property DialogPosition: TDamDlgPosition read FDialogPosition write FDialogPosition default dpScreenCenter;
     property DialogBorder: Boolean read FDialogBorder write FDialogBorder default True;
-    property OnShowMessage: TDamMsgShowEvent read FShowEvent write FShowEvent;
+    property OnShowMessage: TDamShowEvent read FShowEvent write FShowEvent;
+    property OnLinkClick: TDamLinkClickEvent read FLinkClick write FLinkClick;
   end;
 
   TDamMsg = class(TComponent)
@@ -162,14 +168,14 @@ function DamParams(const Params: array of Variant): TDamParams; //compatibility 
 implementation
 
 uses
-  DamDialog, DzHTMLText,
+  DamDialog, DamLanguage, Vcl.DzHTMLText,
 {$IFDEF FPC}
   Forms, Windows;
 {$ELSE}
   Vcl.Forms, Winapi.Windows, System.UITypes;
 {$ENDIF}
 
-const STR_VERSION = '4.8';
+const STR_VERSION = '4.12';
 
 var ObjDefault: TDam = nil;
 
@@ -274,7 +280,7 @@ begin
 end;
 
 function ParseParams(const Msg: string; const Params: TDamParams): string;
-const ARGS: array of string = [DAM_PARAM_IDENT, DAM_PARAM_EXCEPTION];
+const ARGS: array[0..1] of string = (DAM_PARAM_IDENT, DAM_PARAM_EXCEPTION);
 var
   A, aPar: string;
   I, Offset, IdxPar, ArgIdx: Integer;
@@ -412,20 +418,7 @@ begin
 
   FDialogBorder := True;
 
-  case SysLocale.PriLangID of
-    LANG_ENGLISH: FLanguage := dgEnglish;
-    LANG_PORTUGUESE: FLanguage := dgPortuguese;
-    LANG_SPANISH: FLanguage := dgSpanish;
-    LANG_GERMAN: FLanguage := dgGerman;
-    LANG_ITALIAN: FLanguage := dgItalian;
-    LANG_CHINESE: FLanguage := dgChinese;
-    LANG_JAPANESE: FLanguage := dgJapanese;
-    LANG_GREEK: FLanguage := dgGreek;
-    LANG_RUSSIAN: FLanguage := dgRussian;
-    LANG_FRENCH: FLanguage := dgFrench;
-    LANG_POLISH: FLanguage := dgPolish;
-    LANG_DUTCH: FLanguage := dgDutch;
-  end;
+  SetDamLangBySysLang(FLanguage);
 end;
 
 destructor TDam.Destroy;
@@ -558,7 +551,7 @@ end;
 initialization
   {$IFNDEF FPC}System.{$ENDIF}Classes.RegisterClass(TDamMsg);
 
-  if DZHTMLTEXT_INTERNAL_VERSION <> 701 then
+  if DZHTMLTEXT_INTERNAL_VERSION <> 703 then
     raise Exception.Create('Please, update DzHTMLText component.');
 
 end.

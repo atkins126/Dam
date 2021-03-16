@@ -10,7 +10,7 @@ uses
   Vcl.Buttons, System.Classes,
 {$ENDIF}
   //
-  DamUnit, DzHTMLText;
+  DamUnit, Vcl.DzHTMLText;
 
 type
   TFrmDamMsgEdit = class(TForm)
@@ -57,6 +57,7 @@ type
     BtnParameter: TSpeedButton;
     BtnExceptPar: TSpeedButton;
     M: TMemo;
+    WPreview: TShape;
     procedure MChange(Sender: TObject);
     procedure BtnBoldClick(Sender: TObject);
     procedure BtnItalicClick(Sender: TObject);
